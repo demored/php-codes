@@ -9,7 +9,16 @@ class HTTP{
     }
 
     public function getHeader(){
-    
+
     }
 
 }
+
+$time = time();
+
+echo $time.'-'.date('Y-m-d H:i:s',$time);
+echo '<br/>';
+
+echo 'token_expires:1544590075-'.date('Y-m-d H:i:s','1544590075');
+echo '<br/>';
+echo 'date_time:1544582875-'.date('Y-m-d H:i:s','1544582875');
