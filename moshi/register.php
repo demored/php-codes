@@ -31,6 +31,8 @@ class People{
         echo __CLASS__;
     }
 }
+
+
 Register::set('People' , new People());
 Register::get('People') ->work();
 var_dump(Register::get('People') === Register::get('People'));
