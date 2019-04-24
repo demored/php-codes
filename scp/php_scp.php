@@ -66,6 +66,7 @@ setInterval(draw, 33);
 EOT;
 
 exit;
+ini_set("memory_limit")
 set_time_limit(0);
 $host = '139.224.3.132';
 $port = '22';
@@ -74,6 +75,7 @@ ssh2_auth_password($ssh2, 'root', 'zyk139123!@#');
 for($i = 1 ; $i <= 1000 ; $i++) {
     sleep(10);
     $local_file = "index.php";
+
 //    fopen($local_file , 'wr');
 //    file_put_contents($local_file ,$content);
 
