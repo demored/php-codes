@@ -4,6 +4,10 @@
  * 观察者模式
  */
 
+//1、所有观察者通过主题的接口注册到该主题
+//2、主题的状态变化通过观察者的接口，通知所有观察者
+//观察者模式变化的 只有主题的状态和观察者的数量
+
 interface SubjectInter{
     public function attach(ObserverInter $obj);
     public function notify();

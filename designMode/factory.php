@@ -1,72 +1,51 @@
 <?php
+// +----------------------------------------------------------------------
+// | User: zkcs Date: 2019/4/23 Time: 11:40
+// +----------------------------------------------------------------------
+// | Copyright (c) 2018 demored All rights reserved.
+// +----------------------------------------------------------------------
+// | desc: 工厂模式创建Db实例
+// +----------------------------------------------------------------------
 
-/**
- * 简单工厂
- */
-
-//msyql类
-class MysqlDb{
-
+//定义产品
+interface Db{
+	public function connect();
 }
-//Sqlite类
-class SqliteDb {
 
-}
-class Db {
-	
-	static public $ins = null; 
-	static public function getDb($type){
-		if($type == 'mysql'){
-			self::$ins = new MysqlDb();
-		}elseif ($type == 'sqlite') {
-			self::$ins = new SqliteDb();
-		}
-		return self:: $ins;
+class Mysql implements Db{
+	public function connect(){
+		echo "mysql connect";
 	}
 }
 
-$db = Db :: getDb('mysql');
-var_dump($db);
-$db = Db :: getDb('sqlite');
-var_dump($db);
-
-
-//工厂模式
-//产品类
-abstract class Car{
-	abstract public function getCarName();
+class Sqlite implements Db{
+	public function connect(){
+		echo "sqlite connect";
+	}
 }
-//工厂类（主要实现工厂对象），防止实现类时new所以用interface
-interface CarFactory{
-	static function getCarObj();
+
+//工厂类,用来生产同一结构的产品
+interface CreateDbFactory{
+	static public function create();
 }
-//具体产品实现类
-class BigCar extends Car{
-	public function getCarName()
+
+class CreateMysql implements CreateDbFactory{
+	static public function create()
 	{
-		echo 'I am big car';
-	}
-}
-//具体工厂类
-class BigCarFactory implements  CarFactory{
-	public static function getCarObj()
-	{
-		return new BigCar();
+		return new Mysql();
 	}
 }
 
-class SamllCar extends Car{
-	public function getCarName()
+class CreateSqlite implements CreateDbFactory{
+
+	static public function create()
 	{
-		echo 'I am small car';
+		return new Sqlite();
 	}
 }
 
-class SmallCarFactory implements  CarFactory{
-	public static function getCarObj()
-	{
-		return new SamllCar();
-	}
-}
-BigCarFactory::getCarObj()->getCarName();
-SmallCarFactory::getCarObj()->getCarName();
+$mysqlIns = CreateMysql::create();
+$sqliteIns = CreateSqlite::create();
+
+var_dump($mysqlIns);
+var_dump($sqliteIns);

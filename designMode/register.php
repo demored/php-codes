@@ -1,7 +1,8 @@
 <?php
 
 //注册器模式
-
+//将所有的实例按照键值对，注册到一个静态数组中
+//相当于简单工厂+单例模式
 class Register{
     private static $obj = [];
     //注册
@@ -31,7 +32,6 @@ class People{
         echo __CLASS__;
     }
 }
-
 
 Register::set('People' , new People());
 Register::get('People') ->work();

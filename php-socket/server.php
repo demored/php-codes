@@ -57,5 +57,5 @@ while(true) {
     //关闭当前的客户端连接socket
     socket_close($clientSource);
 }
-//关闭整个服务器付
+//关闭整个服务器
 socket_close($socket);
