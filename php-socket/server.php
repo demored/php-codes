@@ -35,6 +35,7 @@ if(!socket_bind($socket , $ip , $port)){
     echo "server bind socket success\n";
 }
 
+
 //监听客户端连接
 if(!socket_listen($socket)){
     echo " server listen socket fail \n reason:".socket_strerror(socket_last_error($socket))."\n";

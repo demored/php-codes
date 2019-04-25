@@ -66,7 +66,6 @@ setInterval(draw, 33);
 EOT;
 
 exit;
-ini_set("memory_limit")
 set_time_limit(0);
 $host = '139.224.3.132';
 $port = '22';
