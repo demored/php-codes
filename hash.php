@@ -23,6 +23,7 @@ class HashTable{
     private function hashFunc($key){
         $len = strlen($key);
         $hashVal = 0;
+
         for($i = 0 ; $i < $len ; $i++){
             $hashVal += ord($key[$i]);
         }
