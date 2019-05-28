@@ -12,6 +12,7 @@ class HashNode{
         $this -> nextNode = $nextNode;
     }
 }
+
 class HashTable{
     private $buckets;
     private $size = 10;
