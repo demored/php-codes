@@ -7,6 +7,7 @@
 // | desc: 自定义一致性hash
 // +----------------------------------------------------------------------
 
+
 interface ConsistentHash{
     //将字符串转换为hash
     public function toHash($str);
@@ -83,6 +84,8 @@ class MyConsistentHash implements ConsistentHash{
 
 }
 
+echo "正在开会";
+echo "<br/>";
 //测试
 
 //添加服务器
@@ -97,8 +100,6 @@ echo "<pre>";
 print_r($hashServer -> serverList);
 print_r($hashServer -> virtualPos);
 
-
-
 //设置key
 
 echo "保存 key1 到 server :".$hashServer->lookup('key1') . '<br />';
@@ -111,8 +112,6 @@ echo "保存 key7 到 server :".$hashServer->lookup('key7') . '<br />';
 echo "保存 key8 到 server :".$hashServer->lookup('key8') . '<br />';
 echo "保存 key9 到 server :".$hashServer->lookup('key9') . '<br />';
 echo "保存 key10 到 server :".$hashServer->lookup('key10') .'<br />';
-
-
 echo "</pre>";
 
 
