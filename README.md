@@ -8,6 +8,7 @@
 |   ├── consistentHash         //一致性hash
 |      ├── consistentHash.php   //自己写的一致性hash
 |      ├── flexihash.php        //网络上开源的一致性hash算法
+├── base                        //基础语法实验
 ├── designMode                //设计模式
 |   ├── abstractFactory.php     //抽象工厂
 |   ├── combine.php             //组合模式
