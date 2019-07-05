@@ -1,0 +1,8 @@
+
+for text;
+
+<?php
+
+phpinfo();
+
+?>
