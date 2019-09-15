@@ -9,6 +9,7 @@
 |      ├── consistentHash.php   //自己写的一致性hash
 |      ├── flexihash.php        //网络上开源的一致性hash算法
 ├── base                        //基础语法实验
+├── compier                     //给php源码加密
 ├── concurrent                 //并发编程
 ├── designMode                //设计模式
 |   ├── abstractFactory.php     //抽象工厂
