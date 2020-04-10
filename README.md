@@ -10,6 +10,11 @@
 |      ├── flexihash.php        //网络上开源的一致性hash算法
 ├── base                        //基础语法实验
 ├── concurrent                 //并发编程
+|   ├── block_process.php       //父进程阻塞和非阻塞模式
+|   ├── defunct_process.php     //多进程防止僵尸进程
+|   ├── more_process.php        //多进程示例
+|   ├── process_insert_mysql.php//多进程插入数据到mysql
+|   ├── signal.php              //多进程中的信号
 ├── designMode                //设计模式
 |   ├── abstractFactory.php     //抽象工厂
 |   ├── combine.php             //组合模式
