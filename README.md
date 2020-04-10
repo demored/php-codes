@@ -9,6 +9,7 @@
 |      ├── consistentHash.php   //自己写的一致性hash
 |      ├── flexihash.php        //网络上开源的一致性hash算法
 ├── base                        //基础语法实验
+├── compier                     //给php源码加密
 ├── concurrent                 //并发编程
 |   ├── block_process.php       //父进程阻塞和非阻塞模式
 |   ├── defunct_process.php     //多进程防止僵尸进程
@@ -40,4 +41,5 @@
 ├── web_safe                  //web应用安全
 ├── README.md                 //readme.md文件
     
+ 
 ```
