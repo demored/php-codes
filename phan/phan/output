@@ -1,0 +1,3 @@
+E:\phpstudy_pro\WWW\php-codes\phan\test_a.php:10 PhanTypeInvalidDimOffset Invalid offset "test" of array type array{}
+E:\phpstudy_pro\WWW\php-codes\phan\test_b.php:3 PhanUndeclaredExtendedClass Class extends undeclared class \B (Did you mean class \A)
+E:\phpstudy_pro\WWW\php-codes\phan\test_b.php:5 PhanUndeclaredMethod Call to undeclared method \A::check
