@@ -13,17 +13,17 @@ $partitionCount = count($partitions);
 
 $count = 1;
 while(true){
+
     $message = json_encode(array('uid' => $count, 'age' => $count%100, 'datetime' => date('Y-m-d H:i:s')));
 
     //发送消息到不同的partition
     $partitionId = $count%$partitionCount;
-    $produce->setMessages(topicName, $partitionId, array($message));
+    $produce->setMessages($topicName, $partitionId, array($message));
     $result = $produce->send();
     var_dump($result);
-    
     $count++;
+
     echo "producer sleeping\n";
     sleep(1);
 
-    $partitionId = $count%
 }

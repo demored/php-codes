@@ -22,6 +22,7 @@ while(true){
             }
         }
     }
+
     echo "consumer sleeping\n";
     sleep(1);
 }

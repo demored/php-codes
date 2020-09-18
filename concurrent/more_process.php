@@ -25,7 +25,6 @@ function sig_handler($sign){
 
 pcntl_signal(SIGCHLD, 'sig_handler');
 
-
 while(1){
     $curChildNums++;
     pcntl_signal_dispatch();

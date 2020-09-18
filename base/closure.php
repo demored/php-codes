@@ -9,6 +9,11 @@
 // | desc: PHP闭包（匿名匿名函数）
 // +----------------------------------------------------------------------
 
+$str = "hello";
+$a = function($param) use ($str){
+    return $param.$str;
+};
+echo $a("world");
 $msg = [1,2,3];
 
 $func = function() use($msg){
@@ -23,7 +28,16 @@ $func1 = function () use (&$msg){
     print_r($msg);
 };
 $func1();
+
+
 print_r($msg);  //引用改变最外层的值
+
+
+
+
+
+
+
 
 class Stu{
     private $name;
