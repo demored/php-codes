@@ -14,7 +14,6 @@ class Index extends Controller
         if(request()->isPost()){
             echo "hello world";
             exit;
-
         }else{
             return $this -> fetch();
         }
