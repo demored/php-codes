@@ -135,13 +135,27 @@ $server->on('Receive', function ($server, $fd, $from_id, $data) {
             }
 
             $req_cmd = open_single_door($response_str["door_num"]);
-            $server->send($fd, "Server cmd1: " . $req_cmd);
+
+            $sendStrArray = str_split(str_replace(' ', '', $req_cmd), 2);
+            $str = "";
+            for ($j = 0; $j < count($sendStrArray); $j++) {
+                $str .= chr(hexdec($sendStrArray[$j]));  // 逐组数据发送
+            }
+
+
+//            $req_cmd = str_replace(" ", "", $req_cmd);
+            file_put_contents("a-{$fd}.txt", $str);
+            $server->send(1,$str);
+
+
         }elseif($response_str["req_type"] == "get_door_status"){
             //获取单个门状态
             if(!isset($response_str["door_num"])){
                 $server->send($fd, result_json(["msg" => "门号必须", "code" => 1000]));
             }
             $req_cmd = get_door_status($response_str["door_num"]);
+            $req_cmd = str_replace(" ", "", $req_cmd);
+
             $server->send($fd, $req_cmd);
         }elseif($response_str["req_type"] == "get_all_door_status"){
             //获取全部箱门状态
@@ -153,9 +167,14 @@ $server->on('Receive', function ($server, $fd, $from_id, $data) {
             $server->send($fd, $req_cmd);
         }
 
+    }elseif(strtolower(strval(bin2hex($data))) == "ef07ff15ffabcd"){
+        //设备发送心跳
+        file_put_contents("b.txt", $data);
     }else{
+        $buffer = bin2hex($data);
         //默认为设备发送
-        
+        file_put_contents("m-{$fd}.txt", $buffer);
+//        $server->send($fd, $buffer);
     }
 
 });

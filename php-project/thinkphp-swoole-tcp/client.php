@@ -11,11 +11,9 @@ $port = 9502;
 //发送内容
 $send_data = [
     "req_type" => "open_single_door",
-    "door_num" => 100
+    "door_num" => $argv[1]
 ];
-
 $send_msg = json_encode($send_data);
-
 
 function send_tcp_message($host, $port, $message)
 {
@@ -24,7 +22,7 @@ function send_tcp_message($host, $port, $message)
         die("Could not create  socket\n");
     }
     @socket_connect($socket, $host, $port);
-
+    socket_set_nonblock($socket);
     $num = 0;
     $length = strlen($message);
     do
@@ -33,7 +31,7 @@ function send_tcp_message($host, $port, $message)
         $ret = @socket_write($socket, $buffer);
         $num += $ret;
     } while ($num < $length);
-
+//    sleep(1);
     $ret = '';
     do
     {
@@ -42,12 +40,32 @@ function send_tcp_message($host, $port, $message)
     } while (strlen($buffer) == 1024);
 
     socket_close($socket);
-
     return $ret;
 }
 
+function send_tcp_hex($host, $port, $message){
+    $sendStr = $message;  // 16进制数据
+    $sendStrArray = str_split(str_replace(' ', '', $sendStr), 2);  // 将16进制数据转换成两个一组的数组
+
+    $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);  // 创建Socket
+
+    if (socket_connect($socket, $host, $port)) {  //连接
+        for ($j = 0; $j < count($sendStrArray); $j++) {
+            socket_write($socket, chr(hexdec($sendStrArray[$j])));  // 逐组数据发送
+        }
+
+        $receiveStr = "";
+        $receiveStr = socket_read($socket, 1024, PHP_BINARY_READ);  // 采用2进制方式接收数据
+        $receiveStrHex = bin2hex($receiveStr);  // 将2进制数据转换成16进制
+
+        echo "client:" . $receiveStrHex;
+    }
+    socket_close($socket);  // 关闭Socket
+}
 $ret = send_tcp_message($host, $port, $send_msg);
-print_r($ret);
+
+//send_tcp_hex($host, $port, $send_msg);
+var_dump($ret);
 //$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)or die("Could not create  socket\n"); // 创建一个Socket
 ////设置$socket 发送超时1秒，接收超时3秒：
 //socket_set_option($socket,SOL_SOCKET,SO_RCVTIMEO,array("sec"=>10, "usec"=>0 ) );
