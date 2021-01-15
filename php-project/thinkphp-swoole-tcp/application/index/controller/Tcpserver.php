@@ -1,16 +1,15 @@
 <?php
 namespace app\index\controller;
 use think\swoole\Server;
+// TCP服务端
+class Tcpserver extends Server{
 
-class Tcpserver extends Server
-{
     // 监听所有地址
     protected $host = '0.0.0.0';
     // 监听 9501 端口
     protected $port = 9502;
     // 指定运行模式为多进程
     protected $mode = SWOOLE_PROCESS;
-
     // 指定 socket 的类型为 ipv4 的 tcp socket
     protected $sockType = SWOOLE_SOCK_TCP;
     protected $serverType = "tcp";
@@ -27,6 +26,67 @@ class Tcpserver extends Server
         'debug_mode' => 1,
          'dispatch_mode' => 2, //固定模式，保证同一个连接发来的数据只会被同一个worker处理
     ];
+
+    //开单个门0x01
+    protected function open_single_door ($door_num){
+        $door_num = hex($door_num);
+        $req_cmd = "EF 08 00 01 FF {$door_num} AB CD";
+        return $req_cmd;
+    }
+
+    //获取某箱门状态 0x02
+    protected function get_door_status ($door_num){
+        $door_num = hex($door_num);
+        $req_cmd = "EF 08 00 02 FF {$door_num} AB CD";
+        return $req_cmd;
+    }
+
+    //0x03：获取全部箱门状态
+    protected function get_all_door_status(){
+        $req_cmd = "EF 07 00 03 FF AB CD";
+        return $req_cmd;
+    }
+
+    //0x06：获取箱门数
+    protected function get_door_nums(){
+        $req_cmd = "EF 07 00 06 FF AB CD";
+        return $req_cmd;
+    }
+
+    //0x11 设置设备编号【服务器->设备】
+    protected function set_device_no($device_no){
+        $device_no_hex = chunk_split(dechex($device_no), 2, ' ');
+        $byte_nums = mb_substr($device_no)+ 7;
+        $byte_nums_hex = hex($byte_nums);
+        $req_cmd = "EF {$byte_nums_hex} 00 11 FF {$device_no_hex} AB CD";
+        return $req_cmd;
+    }
+
+    //0x12：获取设备编号
+    protected function get_device_no(){
+        $req_cmd = "EF 07 00 12 FF AB CD";
+        return $req_cmd;
+    }
+
+    //0x13：设置设备日期时间
+    protected function set_device_date(){
+        $time = date("Y-m-d H:i:s");
+        $device_date_hex = chunk_split(dechex($time), 2, ' ');
+        $byte_nums = mb_substr($time) + 7;
+        $byte_nums_hex = hex($byte_nums);
+        $req_cmd = "EF {$byte_nums_hex} 00 13 FF {$device_date_hex} AB CD";
+        return $req_cmd;
+    }
+
+    //0x14：发送二维码
+    protected function set_device_qrcode($qrcode_cont){
+        $device_qrcode_hex = chunk_split(dechex($qrcode_cont), 2, ' ');
+        $byte_nums = mb_substr($device_qrcode_hex) + 7;
+        $byte_nums_hex = hex($byte_nums);
+        $req_cmd = "EF {$byte_nums_hex} 00 14 FF {$device_qrcode_hex} AB CD";
+        return $req_cmd;
+    }
+    
 
     //建立连接时回调函数
     public function onConnect(\swoole_server $server, $fd){
