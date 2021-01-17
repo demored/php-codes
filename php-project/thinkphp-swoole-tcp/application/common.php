@@ -42,46 +42,36 @@ function send_tcp_message($host, $port, $send_data = []){
 function format_str($str){
     return str_replace(" ","", $str);
 }
-
-//解析响应cmd字符串
-//EF 08 00 01 00 01 AB CD
-function parse_response_cmd($cmd = ""){
-    $response_cmd = format_str($cmd);
-    $response_cmd_type = substr($response_cmd,6,2); //命令类型
-    switch ("0x".$response_cmd_type){
-        case "0x01": //1、开箱门【服务器->设备】
-            $response_code = substr($response_cmd, 8, 2);
-            if($response_code == "00"){
-                echo "开箱成功";
-            }
-            if($response_code == "01"){
-                echo "开箱失败";
-            }
-            if($response_code == "02"){
-                echo "与锁板通信故障";
-            }
-            if($response_code == "03"){
-                echo "没有此箱号";
-            }
-            break;
-        case "0x02": //获取某箱门状态【服务器->设备】
-            break;
-        default:
-            echo "命令错误";
-            break;
-    }
-}
-
-//将十进制转换成十六进制
+//将单个十进制转换成十六进制
 function hex($num = 0){
     return sprintf("%02s", strtoupper(dechex($num)));
 }
 
-//todo 使用redis存储fd和设备号对应关系
-//获取设备的fd
-function get_device_fd(){
+//将16进制字符串格式 命令转换成16进制
+function str2hex($req_cmd = ""){
+    $sendStrArray = str_split(str_replace(' ', '', $req_cmd), 2);
+    $str = "";
+    for ($j = 0; $j < count($sendStrArray); $j++) {
+        $str .= chr(hexdec($sendStrArray[$j]));  // 逐组数据发送
+    }
 
+    $req_cmd_hex = str_replace(" ", "", $str);
+    return $req_cmd_hex;
 }
+
+//将16进制转换成字符串
+function hex2str($hex_cmd = ""){
+    $str = "";
+    for ($i = 0;$i < strlen($hex_cmd) - 1;$i+= 2) {
+        $str.= chr(hexdec($hex_cmd[$i] . $hex_cmd[$i + 1]));
+    }
+    return $str;
+}
+
+//根据设备号获取fd
+function get_device_fd($device_no = ""){
+}
+
 
 //数组格式化成json格式
 function format_json($arr = []){
