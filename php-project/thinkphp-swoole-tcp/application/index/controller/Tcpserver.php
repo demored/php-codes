@@ -36,7 +36,7 @@ class Tcpserver extends Server{
         //字节数
         $byte_nums = mb_substr($device_no) + 7;
         //字节数转成16进制
-        $byte_nums_hex = hex($byte_nums);
+        $byte_nums_hex = int2hex($byte_nums);
         $req_cmd = "EF {$byte_nums_hex} 00 11 FF {$device_no_hex} AB CD";
         return $req_cmd;
     }
@@ -49,14 +49,14 @@ class Tcpserver extends Server{
 
     //开单个门0x01
     protected function open_single_door ($door_num){
-        $door_num = hex($door_num);
+        $door_num = int2hex($door_num);
         $req_cmd = "EF 08 00 01 FF {$door_num} AB CD";
         return $req_cmd;
     }
 
     //获取某箱门状态 0x02
     protected function get_door_status ($door_num){
-        $door_num = hex($door_num);
+        $door_num = int2hex($door_num);
         $req_cmd = "EF 08 00 02 FF {$door_num} AB CD";
         return $req_cmd;
     }
@@ -78,7 +78,7 @@ class Tcpserver extends Server{
         $time = date("Y-m-d H:i:s");
         $device_date_hex = chunk_split(dechex($time), 2, ' ');
         $byte_nums = mb_substr($time) + 7;
-        $byte_nums_hex = hex($byte_nums);
+        $byte_nums_hex = int2hex($byte_nums);
         $req_cmd = "EF {$byte_nums_hex} 00 13 FF {$device_date_hex} AB CD";
         return $req_cmd;
     }
@@ -87,7 +87,7 @@ class Tcpserver extends Server{
     protected function set_device_qrcode($qrcode_data){
         $device_qrcode_hex = chunk_split(dechex($qrcode_data), 2, ' ');
         $byte_nums = mb_substr($qrcode_data) + 7;
-        $byte_nums_hex = hex($byte_nums);
+        $byte_nums_hex = int2hex($byte_nums);
         $req_cmd = "EF {$byte_nums_hex} 00 14 FF {$device_qrcode_hex} AB CD";
         return $req_cmd;
     }
@@ -96,7 +96,7 @@ class Tcpserver extends Server{
     protected function set_device_pwd($pwd){
         $pwd_hex = chunk_split(dechex($pwd), 2, ' ');
         $byte_nums = mb_substr($pwd) + 6;
-        $byte_nums_hex = hex($byte_nums);
+        $byte_nums_hex = int2hex($byte_nums);
         $req_cmd = "EF {$byte_nums_hex} 00 1D FF 02 {$pwd_hex} AB CD";
         return $req_cmd;
     }
@@ -132,7 +132,6 @@ class Tcpserver extends Server{
                     $result["msg"] = "未知错误";
                     $result["code"] = 101;
                 }
-
                 break;
             case "0x02": //获取某箱门状态【服务器->设备】
                 $result["type"] = "0x02";
@@ -145,28 +144,137 @@ class Tcpserver extends Server{
                     $result["msg"] = "开启状态";
                 }elseif(count($response_cmd_hex_arr) == 7){
                     $result["msg"] = "与锁板通信故障";
+                    $result["code"] = 102;
                 }else{
                     $result["msg"] = "未知错误";
                     $result["code"] = 101;
                 }
+
                 break;
 
             case "0x03": //获取全部箱门状态【服务器->设备】
                 $result["type"] = "0x03";
                 $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+                if(count($response_cmd_hex_arr) == 7){
+                    $result["msg"] = "与锁板通信故障";
+                    $result["code"] = 102;
+                }else{
 
+                    $door_arr = implode("", array_slice($response_cmd_hex_arr, 5, -2));
+                    $door_status_arr = ["door_num" => hex2int($door_arr[0]), "door_msg" => []];
+                    foreach ($door_arr as $k => $v){
+                        $door_status_arr["door_msg"][$k] = $v == "00"?"关闭":"开启";
+                    }
 
+                    $result["msg"] = "获取成功";
+                    $result["data"] = $door_status_arr;
+                }
+                break;
 
-
+            case "0x06": //获取箱门数【服务器->设备】
+                $result["type"] = "0x06";
+                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+                $hex_num = $response_cmd_hex_arr[5];
+                $result["msg"] = "获取成功";
+                $result["data"] = ["nums" => hex2int($hex_num)];
 
                 break;
+
+            case "0x0A": //设备发送密码给服务器【设备->服务器】
+                        //这里只获取密码
+                $result["type"] = "0x0A";
+                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+                //获取设备发来的十六进制密码
+                $pwd_hex = implode("", array_slice($response_cmd_hex_arr, 5, -2));
+                $pwd = hex2str(format_str($pwd_hex));
+                $result["msg"] = "成功获取服务器密码";
+                $result["data"] = ["pwd" => $pwd];
+                break;
+
+            case "0x07"://设备发送密码给服务器，服务器收到再发送结果给设备，设备的响应
+                $result["type"] = "0x07";
+                $result["msg"] = "发送密码检验后的设备响应";
+                $result["data"] = ["cmd" => $response_cmd];
+//                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+//                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+//                $code_status = $response_cmd_hex_arr[5];
+//
+                break;
+
+            case "0x11": //设置设备编号【服务器->设备】
+                $result["type"] = "0x07";
+                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+                $code_status = $response_cmd_hex_arr[4];
+                if($code_status == "00"){
+                    $result["msg"] = "设置成功";
+                }elseif($code_status == "01"){
+                    $result["msg"] = "设置失败";
+                }
+                break;
+
             case "0x12": //获取设备编号【服务器->设备】
-                $hex_cmd = substr($response_cmd, 10, -4);
-                $str = hex2str($hex_cmd);
-                return ["response_type" => "0x01", "device_no" => $str, "code" => 0];
+                $result["type"] = "0x12";
+                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+                $device_hex_str = implode("", array_slice($response_cmd_hex_arr, 5, -2));
+                $device_no = hex2str(format_str($device_hex_str));
+
+                $result["msg"] = "获取成功";
+                $result["data"]["device_no"] = $device_no;
+
+                break;
+            case "0x14": //发送二维码【服务器->设备】
+                $result["type"] = "0x14";
+                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+                if($response_cmd_hex_arr[4] == "00"){
+                    $result["msg"] = "设置成功";
+                }else{
+                    $result["msg"] = "设置失败";
+                }
+                break;
+
+            case "0x1D": //获取/设置设备初始登录密码【上位机->下位机】
+                $result["type"] = "0x1D";
+                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+                if(count($response_cmd_hex_arr) == 7){
+                    //设置设备初始密码
+                    $result["msg"] = "设置成功";
+                }else{
+                    //获取设备初始密码
+                    $device_pwd_hex = implode("", array_slice($response_cmd_hex_arr, 5, -2));
+                    $device_pwd = hex2str(format_str($device_pwd_hex));
+                    $result["msg"] = "获取设备初始密码成功";
+                    $result["data"]["device_pwd"] = $device_pwd;
+                }
+                break;
+
+            case "0x27": //获取4G卡ICCID号
+                $result["type"] = "0x27";
+                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
+                if($response_cmd_hex_arr[4] == "05"){
+                    $result["msg"] = "网络模块不是4G模块，是有线联网";
+
+                }elseif(intval(format_str($response_cmd)) == 0){
+                    $result["msg"] = "获取失败";
+                }else{
+                    $ICCID_str_hex = implode("", array_slice($response_cmd_hex_arr, 4, -2));
+                    $ICCID = hex2str(format_str($ICCID_str_hex));
+                    $result["msg"] = "获取成功";
+                    $result["data"]["iccid"] = $ICCID;
+                }
+
+
                 break;
             default:
-                echo "命令错误";
+                $result["code"] = 100;
+                $result["msg"] = "命令错误";
                 break;
         }
     }
@@ -220,7 +328,6 @@ class Tcpserver extends Server{
 
             }elseif($response_str["req_type"] == "get_all_door_status"){
                 //获取全部箱门状态
-
                 $fd = $response_str["fd"];
                 $req_cmd = $this -> get_all_door_status();
                 $tcp_cmd = str2hex($req_cmd);
@@ -277,11 +384,13 @@ class Tcpserver extends Server{
             //设备响应
             $response_cmd = bin2hex($data);
             $result = parse_response_cmd($response_cmd);
-            if($result["response_type"] == "response_type"){
+            if($result["type"] == "0x12"){
                 //获取设备号，更新数据库
-                Db::name("fd") -> where(["fd" => $fd]) -> update(["device_no" => $result["device_no"]]);
+                if(isset($result["data"]["device_no"])){
+                    Db::name("fd") -> where(["fd" => $fd]) -> update(["device_no" => $result["data"]["device_no"]]);
+                }
+                
             }
-
         }
     }
 

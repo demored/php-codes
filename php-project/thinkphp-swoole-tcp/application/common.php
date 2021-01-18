@@ -43,9 +43,16 @@ function format_str($str){
     return str_replace(" ","", $str);
 }
 //将单个十进制转换成十六进制
-function hex($num = 0){
+function int2hex($num = 0){
     return sprintf("%02s", strtoupper(dechex($num)));
 }
+
+//将单个十六进制转换成十进制
+function hex2int($hex_num){
+    return hexdec($hex_num);
+}
+
+
 
 //将16进制字符串格式 命令转换成16进制
 function str2hex($req_cmd = ""){
