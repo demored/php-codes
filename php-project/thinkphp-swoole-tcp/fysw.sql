@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50726
 File Encoding         : 65001
 
-Date: 2021-01-18 07:53:42
+Date: 2021-01-20 18:54:28
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -27,8 +27,9 @@ CREATE TABLE `fysw_devices` (
   `update_time` int(11) NOT NULL DEFAULT '0' COMMENT '更新时间',
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '-1无效',
   `is_set` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1：已设置设备号',
+  `is_alived` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1存活，-1离线（5分钟未发送心跳视为死亡）',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COMMENT='设备的fd、设备号、以及设备存活状态';
 
 -- ----------------------------
 -- Records of fysw_devices

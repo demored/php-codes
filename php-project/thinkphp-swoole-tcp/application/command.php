@@ -10,5 +10,5 @@
 // +----------------------------------------------------------------------
 
 return [
-    "app\command\TcpServer"
+    "app\index\command\Testalived"
 ];

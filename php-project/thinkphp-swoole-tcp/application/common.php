@@ -9,6 +9,8 @@
 // | Author: 流年 <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
+use think\Db;
+
 //发送消息到tcp Server
 function send_tcp_message($host, $port, $send_data = []){
 
@@ -83,4 +85,16 @@ function get_device_fd($device_no = ""){
 //数组格式化成json格式
 function format_json($arr = []){
     return json_encode($arr);
+}
+
+//设置设备号
+//设备号规则，1）不重复 2）递增+1 3）00000001 8位数
+function create_device_no(){
+    $last_device_no = Db::name("devices") -> where(["device_no" => ["neq", ""]]) -> value("device_no");
+    if(empty($last_device_no)){
+        $device_no = "000001";
+    }else{
+        $device_no = sprintf("%06d", intval($last_device_no) + 1);
+    }
+    return $device_no;
 }

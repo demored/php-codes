@@ -299,88 +299,104 @@ class Tcpserver extends Server{
                 $device_no = $response_str["device_no"];
                 $req_cmd = $this -> set_device_no($device_no);
                 $tcp_cmd = str2hex($req_cmd);
-                $fd = $response_str["fd"];
-                $server->send($fd,$tcp_cmd);
+                $device_fd = $response_str["fd"];
+                $server->send($device_fd,$tcp_cmd);
 
             }elseif($response_str["req_type"] == "get_device_no"){
                 //获取设备号
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $req_cmd = $this ->get_device_no();
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd,$tcp_cmd);
+                $server->send($device_fd,$tcp_cmd);
 
             }elseif($response_str["req_type"] == "open_single_door"){
                 //开单个门
                 $device_no = $response_str["device_no"];
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $door_num = $response_str["door_num"];
                 $req_cmd = $this -> open_single_door($door_num);
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd,$tcp_cmd);
+                $server->send($device_fd,$tcp_cmd);
 
             }elseif($response_str["req_type"] == "get_door_status"){
                 //获取单个门状态
                 $door_num = $response_str["door_num"];
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $req_cmd = $this -> get_door_status($door_num);
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd, $tcp_cmd);
+                $server->send($device_fd, $tcp_cmd);
 
             }elseif($response_str["req_type"] == "get_all_door_status"){
                 //获取全部箱门状态
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $req_cmd = $this -> get_all_door_status();
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd, $tcp_cmd);
+                $server->send($device_fd, $tcp_cmd);
 
             }elseif($response_str["req_type"] == "get_door_nums"){
                 //获取箱门数
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $req_cmd = $this -> get_door_nums();
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd, $tcp_cmd);
+                $server->send($device_fd, $tcp_cmd);
             }elseif($response_str["req_type"] == "set_device_date"){
                 //设置设备日期
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $req_cmd = $this -> set_device_date();
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd, $tcp_cmd);
+                $server->send($device_fd, $tcp_cmd);
             }elseif($response_str["req_type"] == "set_device_qrcode"){
                 //发送二维码【服务器->设备】
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $qrcode_data = $response_str["qrcode_data"];
                 $req_cmd = $this -> set_device_qrcode($qrcode_data);
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd, $tcp_cmd);
+                $server->send($device_fd, $tcp_cmd);
             }elseif($response_str["req_type"] == "set_device_pwd"){
                 //设置设备初始登录密码
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $pwd = $response_str["pwd"];
                 $req_cmd = $this -> set_device_pwd($pwd);
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd, $tcp_cmd);
+                $server->send($device_fd, $tcp_cmd);
             }elseif($response_str["req_type"] == "get_device_pwd"){
                 //获取设备初始登录密码
-                $fd = $response_str["fd"];
+                $device_fd = $response_str["fd"];
                 $req_cmd = $this -> get_device_pwd();
                 $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd, $tcp_cmd);
+                $server->send($device_fd, $tcp_cmd);
             }
 
         }elseif(strtolower(strval(bin2hex($data))) == "ef07ff15ffabcd"){
-            //设备发送心跳
-            $res = Db::name("device") -> where(["fd"=> $fd]) -> find();
-            if(empty($res)){
-                Db::name("fd") -> insert(["fd" => $fd, "create_time" => time()]);
+            //设备发送心跳，心跳包默认20s一次
+            $device_info = Db::name("device") -> where(["fd"=> $fd]) -> find();
+            if(empty($device_info)){
+
+                $device_no = create_device_no();
+                $device_data = [
+                    "fd" => $fd,
+                    "create_time" => time(), //初次连接时间
+                    //设置设备号
+                    "device_no" =>$device_no
+                ];
+                Db::name("fd") -> insert($device_data);
+
+                //发送设置设备号到设备指令
+                $req_cmd = $this -> set_device_no($device_no);
+                $tcp_cmd = str2hex($req_cmd);
+                $server->send($fd,$tcp_cmd);
             }else{
+                //更新最新的时间
                 Db::name("fd") -> where(["fd" => $fd]) -> update(["update_time" => time()]);
             }
-            //每次心跳时，获取设备编号
-            $req_cmd  = "EF 07 00 12 FF AB CD";
-            $tcp_cmd = str2hex($req_cmd);
-            $server->send($fd, $tcp_cmd);
+
+            //每次心跳时，获取设备编号，一旦连接就主动设置设备号
+//            $req_cmd  = "EF 07 00 12 FF AB CD";
+//            $tcp_cmd = str2hex($req_cmd);
+//            $server->send($fd, $tcp_cmd);
 
         }else{
+
             //设备响应
             $response_cmd = bin2hex($data);
             $result = parse_response_cmd($response_cmd);
@@ -397,6 +413,11 @@ class Tcpserver extends Server{
     //连接关闭时回调函数
     public function onClose($server, $fd){
         echo "Client-{$fd}: Close.\n";
+        //判断是否是设备，如果是设备则更新数据库
+        //注意事项：当服务端进程重启后，则fd会重新开始计数，也就是说会影响之前的数据
+        Db::name("devices") -> where(["fd" => $fd]) -> update(["is_alived" => -1]);
+
+
     }
 
     public function onRequest($request, $response) {
