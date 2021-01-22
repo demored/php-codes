@@ -99,7 +99,6 @@ class Res extends Base{
             }
 
             $fd = Db::name("devices") -> where(["device_no" => $device_no]) -> value("fd");
-
             if(empty($fd)){
                 $this -> return_json(40006, "该设备号不存在");
             }
@@ -149,6 +148,7 @@ class Res extends Base{
             $this -> return_json(40001, "非法请求");
         }
     }
+
 
     //获取所有门箱状态
     public function get_all_door_status(){

@@ -122,15 +122,19 @@ class Tcpserver extends Server{
                 $response_code = substr($response_cmd, 8, 2);
                 if($response_code == "00"){
                     $result["msg"] = "开箱成功";
+                    $result["code"] = 10000;
                 }elseif ($response_code == "01"){
                     $result["msg"] = "开箱失败";
+                    $result["code"] = 10001;
                 }elseif($response_code == "02"){
                     $result["msg"] = "与锁板通信故障";
+                    $result["code"] = 20002;
                 }elseif($response_code == "03"){
                     $result["msg"] = "没有此箱号";
+                    $result["code"] = 10003;
                 }else{
                     $result["msg"] = "未知错误";
-                    $result["code"] = 101;
+                    $result["code"] = 20001;
                 }
                 break;
             case "0x02": //获取某箱门状态【服务器->设备】
@@ -140,14 +144,16 @@ class Tcpserver extends Server{
                 $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
                 if($response_cmd_hex_arr[6] == "00"){
                     $result["msg"] = "关闭状态";
+                    $result["code"] = 10004;
                 }elseif($response_cmd_hex_arr[6] == "01"){
                     $result["msg"] = "开启状态";
+                    $result["code"] = 10005;
                 }elseif(count($response_cmd_hex_arr) == 7){
                     $result["msg"] = "与锁板通信故障";
-                    $result["code"] = 102;
+                    $result["code"] = 20002;
                 }else{
                     $result["msg"] = "未知错误";
-                    $result["code"] = 101;
+                    $result["code"] = 20001;
                 }
 
                 break;
@@ -158,7 +164,7 @@ class Tcpserver extends Server{
                 $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
                 if(count($response_cmd_hex_arr) == 7){
                     $result["msg"] = "与锁板通信故障";
-                    $result["code"] = 102;
+                    $result["code"] = 20002;
                 }else{
 
                     $door_arr = implode("", array_slice($response_cmd_hex_arr, 5, -2));
@@ -201,7 +207,6 @@ class Tcpserver extends Server{
 //                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
 //                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
 //                $code_status = $response_cmd_hex_arr[5];
-//
                 break;
 
             case "0x11": //设置设备编号【服务器->设备】
@@ -397,7 +402,7 @@ class Tcpserver extends Server{
 
         }else{
 
-            //设备响应
+            //设备发送响应
             $response_cmd = bin2hex($data);
             $result = parse_response_cmd($response_cmd);
             if($result["type"] == "0x12"){
@@ -406,6 +411,48 @@ class Tcpserver extends Server{
                     Db::name("fd") -> where(["fd" => $fd]) -> update(["device_no" => $result["data"]["device_no"]]);
                 }
                 
+            }elseif ($result["type"] == "0x01"){
+                //开箱门
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x02"){
+                //获取某箱门状态
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x03"){
+                //获取全部箱门状态
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x06"){
+                //获取箱门数
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x06"){
+                //获取箱门数
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x0A"){
+
+                //设备发送密码给服务器
+                //向业务接口发送密码，验证是否成功
+                //验证成功后发送开门指令
+                $url = "";
+                $data = [];
+                $curl_result = curl_post($url, $data);
+
+            }elseif ($result["type"] == "0x07"){
+                //设备发送密码给服务器，服务器收到再发送结果给设备，设备的响应
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x11"){
+                //设置设备编号
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x12"){
+                //获取设备编号
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x14"){
+                //发送二维码
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x1D"){
+                //获取/设置设备初始登录密码
+                $server -> send($from_id , format_json($result));
+            }elseif ($result["type"] == "0x27"){
+                //获取4G卡ICCID号
+                $server -> send($from_id , format_json($result));
             }
         }
     }
@@ -416,7 +463,6 @@ class Tcpserver extends Server{
         //判断是否是设备，如果是设备则更新数据库
         //注意事项：当服务端进程重启后，则fd会重新开始计数，也就是说会影响之前的数据
         Db::name("devices") -> where(["fd" => $fd]) -> update(["is_alived" => -1]);
-
 
     }
 
