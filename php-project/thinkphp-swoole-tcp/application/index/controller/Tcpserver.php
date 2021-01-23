@@ -137,6 +137,7 @@ class Tcpserver extends Server{
                     $result["code"] = 20001;
                 }
                 break;
+
             case "0x02": //获取某箱门状态【服务器->设备】
                 $result["type"] = "0x02";
                 //转换成16进制格式
@@ -172,8 +173,8 @@ class Tcpserver extends Server{
                     foreach ($door_arr as $k => $v){
                         $door_status_arr["door_msg"][$k] = $v == "00"?"关闭":"开启";
                     }
-
                     $result["msg"] = "获取成功";
+                    $result["code"] = 10006;
                     $result["data"] = $door_status_arr;
                 }
                 break;
@@ -184,6 +185,7 @@ class Tcpserver extends Server{
                 $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
                 $hex_num = $response_cmd_hex_arr[5];
                 $result["msg"] = "获取成功";
+                $result["code"] = 10006;
                 $result["data"] = ["nums" => hex2int($hex_num)];
 
                 break;
@@ -197,6 +199,7 @@ class Tcpserver extends Server{
                 $pwd_hex = implode("", array_slice($response_cmd_hex_arr, 5, -2));
                 $pwd = hex2str(format_str($pwd_hex));
                 $result["msg"] = "成功获取服务器密码";
+                $result["code"] = 10006;
                 $result["data"] = ["pwd" => $pwd];
                 break;
 
@@ -216,8 +219,10 @@ class Tcpserver extends Server{
                 $code_status = $response_cmd_hex_arr[4];
                 if($code_status == "00"){
                     $result["msg"] = "设置成功";
+                    $result["code"] = 10007;
                 }elseif($code_status == "01"){
                     $result["msg"] = "设置失败";
+                    $result["code"] = 10008;
                 }
                 break;
 
@@ -229,17 +234,26 @@ class Tcpserver extends Server{
                 $device_no = hex2str(format_str($device_hex_str));
 
                 $result["msg"] = "获取成功";
+                $result["code"] = 10006;
                 $result["data"]["device_no"] = $device_no;
 
                 break;
+            case "0x13": //设置设备日期时间
+                $result["type"] = "0x13";
+                $result["msg"] = "设置成功";
+                $result["code"] = 10007;
+                break;
+
             case "0x14": //发送二维码【服务器->设备】
                 $result["type"] = "0x14";
                 $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
                 $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
                 if($response_cmd_hex_arr[4] == "00"){
                     $result["msg"] = "设置成功";
+                    $result["code"] = 10007;
                 }else{
                     $result["msg"] = "设置失败";
+                    $result["code"] = 10008;
                 }
                 break;
 
@@ -250,12 +264,14 @@ class Tcpserver extends Server{
                 if(count($response_cmd_hex_arr) == 7){
                     //设置设备初始密码
                     $result["msg"] = "设置成功";
+                    $result["code"] = 10007;
                 }else{
                     //获取设备初始密码
                     $device_pwd_hex = implode("", array_slice($response_cmd_hex_arr, 5, -2));
                     $device_pwd = hex2str(format_str($device_pwd_hex));
-                    $result["msg"] = "获取设备初始密码成功";
+                    $result["msg"] = "获取成功";
                     $result["data"]["device_pwd"] = $device_pwd;
+                    $result["code"] = 10006;
                 }
                 break;
 
@@ -265,20 +281,22 @@ class Tcpserver extends Server{
                 $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
                 if($response_cmd_hex_arr[4] == "05"){
                     $result["msg"] = "网络模块不是4G模块，是有线联网";
+                    $result["code"] = 10010;
 
                 }elseif(intval(format_str($response_cmd)) == 0){
                     $result["msg"] = "获取失败";
+                    $result["code"] = 10009;
                 }else{
                     $ICCID_str_hex = implode("", array_slice($response_cmd_hex_arr, 4, -2));
                     $ICCID = hex2str(format_str($ICCID_str_hex));
                     $result["msg"] = "获取成功";
+                    $result["code"] = 10006;
                     $result["data"]["iccid"] = $ICCID;
                 }
 
-
                 break;
             default:
-                $result["code"] = 100;
+                $result["code"] = 11000;
                 $result["msg"] = "命令错误";
                 break;
         }
