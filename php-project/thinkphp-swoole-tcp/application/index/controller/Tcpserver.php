@@ -453,6 +453,12 @@ class Tcpserver extends Server{
                 $data = [];
                 $curl_result = curl_post($url, $data);
 
+                //验证成功开箱门
+                $req_cmd = $this -> open_single_door($door_num);
+                $tcp_cmd = str2hex($req_cmd);
+                $server->send($device_fd,$tcp_cmd);
+                
+
             }elseif ($result["type"] == "0x07"){
                 //设备发送密码给服务器，服务器收到再发送结果给设备，设备的响应
                 $server -> send($from_id , format_json($result));
