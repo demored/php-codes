@@ -457,7 +457,7 @@ class Tcpserver extends Server{
                 $req_cmd = $this -> open_single_door($door_num);
                 $tcp_cmd = str2hex($req_cmd);
                 $server->send($device_fd,$tcp_cmd);
-                
+
 
             }elseif ($result["type"] == "0x07"){
                 //设备发送密码给服务器，服务器收到再发送结果给设备，设备的响应
