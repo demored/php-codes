@@ -31,7 +31,15 @@ class Res extends Base{
         if($token != $this -> token){
             $this -> return_json(40101, "令牌错误");
         }
+    }
 
+    //解析从tcp服务端传递过来的返回数据
+    public function parse_tcp_server_return($result){
+        $result = json_decode($result, true);
+        $code = $result["code"];
+        $msg = $result["msg"];
+        $data = $result["data"];
+        $this -> return_json($code, $msg, $data);
     }
 
     //获取所有自提柜
@@ -48,19 +56,20 @@ class Res extends Base{
     public function set_device_no(){
         if(IS_POST){
             $device_no = input("device_no/s", "", "trim");
-            //句柄资源
-//            $fd = input("fd/d", 0 , "intval");
-//            if(empty($fd)){
-//                $this -> return_json(30009, "句柄必须");
-//            }
             if(empty($device_no)){
                 $this -> return_json(30003, "设备号必须");
             }
-            $fd = Db::name("devices") -> where(["device_no" => $device_no]) -> value("fd");
+
+            //句柄资源
+            $fd = input("fd/d", 0 , "intval");
             if(empty($fd)){
-                $this -> return_json(30006, "该设备号不存在");
+                $this -> return_json(30009, "句柄必须");
             }
 
+//            $fd = Db::name("devices") -> where(["device_no" => $device_no]) -> value("fd");
+//            if(empty($fd)){
+//                $this -> return_json(30006, "该设备号不存在");
+//            }
 
             if(mb_strlen($device_no) > 15){
                 $this -> return_json(30010, "设备号最长15字节");
@@ -71,8 +80,8 @@ class Res extends Base{
                 "device_no" => $device_no,
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -122,8 +131,9 @@ class Res extends Base{
                 "device_no" => $device_no,
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
+
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -265,8 +275,10 @@ class Res extends Base{
                 "qrcode_data" => $qrcode_data,
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
+
+//            var_dump($ret);
         }else{
             $this -> return_json(30001, "非法请求");
         }
