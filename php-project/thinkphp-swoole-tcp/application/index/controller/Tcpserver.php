@@ -389,9 +389,9 @@ class Tcpserver extends Server{
                 $tcp_cmd = str2hex($req_cmd);
                 $server->send($device_fd, $tcp_cmd);
             }
-
         }elseif(strtolower(strval(bin2hex($data))) == "ef07ff15ffabcd"){
             //设备发送心跳，心跳包默认20s一次
+
             $device_info = Db::name("device") -> where(["fd"=> $fd]) -> find();
             if(empty($device_info)){
 
@@ -479,6 +479,9 @@ class Tcpserver extends Server{
                 $server -> send($from_id , format_json($result));
             }
         }
+            
+
+        $server -> send($from_id , format_json(["hahjahha" => "hhehe"]));
     }
 
     //连接关闭时回调函数

@@ -14,6 +14,7 @@ use think\Db;
 class Res extends Base{
     private  $host = "39.100.145.198";
     private $port = 9502;
+    private $token = "9a3ebb2820a834dcec33360a3b164947";
     private $message = [
         "code" => 0,
         "msg" => ""
@@ -24,8 +25,13 @@ class Res extends Base{
         //检查token
         $token = $this -> request -> header("token");
         if(empty($token)){
-            $this -> return_json(40000, "禁止访问");
+            $this -> return_json(40100, "禁止访问");
         }
+
+        if($token != $this -> token){
+            $this -> return_json(40101, "令牌错误");
+        }
+
     }
 
     //获取所有自提柜
@@ -43,7 +49,10 @@ class Res extends Base{
         if(IS_POST){
             $device_no = input("device_no/s", "", "trim");
             //句柄资源
-            $fd = input("fd/d", 0 , "intval");
+//            $fd = input("fd/d", 0 , "intval");
+//            if(empty($fd)){
+//                $this -> return_json(30009, "句柄必须");
+//            }
             if(empty($device_no)){
                 $this -> return_json(30003, "设备号必须");
             }
@@ -52,9 +61,7 @@ class Res extends Base{
                 $this -> return_json(30006, "该设备号不存在");
             }
 
-            if(empty($fd)){
-                $this -> return_json(30009, "句柄必须");
-            }
+
             if(mb_strlen($device_no) > 15){
                 $this -> return_json(30010, "设备号最长15字节");
             }
