@@ -66,11 +66,6 @@ class Res extends Base{
                 $this -> return_json(30009, "句柄必须");
             }
 
-//            $fd = Db::name("devices") -> where(["device_no" => $device_no]) -> value("fd");
-//            if(empty($fd)){
-//                $this -> return_json(30006, "该设备号不存在");
-//            }
-
             if(mb_strlen($device_no) > 15){
                 $this -> return_json(30010, "设备号最长15字节");
             }
@@ -100,8 +95,8 @@ class Res extends Base{
                 "req_type" => "get_device_no",
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -164,8 +159,8 @@ class Res extends Base{
                 "fd" => $fd
             ];
 
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -191,8 +186,9 @@ class Res extends Base{
                 "device_no" => $device_no,
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -217,8 +213,8 @@ class Res extends Base{
                 "device_no" => $device_no,
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -243,8 +239,10 @@ class Res extends Base{
                 "device_no" => $device_no,
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+
+            $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -278,7 +276,6 @@ class Res extends Base{
             $result = send_tcp_message($this -> host, $this ->port, $send_data);
             $this -> parse_tcp_server_return($result);
 
-//            var_dump($ret);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -317,8 +314,8 @@ class Res extends Base{
                 "pwd" => $pwd,
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -343,8 +340,9 @@ class Res extends Base{
                 "device_no" => $device_no,
                 "fd" => $fd
             ];
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+
+            $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
         }
@@ -370,8 +368,9 @@ class Res extends Base{
                 "fd" => $fd
             ];
 
-            $ret = send_tcp_message($this -> host, $this ->port, $send_data);
-            var_dump($ret);
+            $result = send_tcp_message($this -> host, $this ->port, $send_data);
+            $this -> parse_tcp_server_return($result);
+
         }else{
             $this -> return_json(30001, "非法请求");
         }
