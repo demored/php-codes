@@ -2,6 +2,13 @@
 namespace app\index\controller;
 use think\swoole\Server;
 use think\Db;
+
+use Monolog\Logger;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
+
+
 // TCP服务端
 class Tcpserver extends Server{
 
@@ -15,6 +22,8 @@ class Tcpserver extends Server{
     protected $sockType = SWOOLE_SOCK_TCP;
     protected $serverType = "tcp";
     protected $log_path = "/data/wwwroot/zyk-swoole-tcp/";
+    private $log_ins = null;
+
     // 配置项
     protected $option = [
         /**
@@ -28,6 +37,29 @@ class Tcpserver extends Server{
         'debug_mode' => 1,
          'dispatch_mode' => 2, //固定模式，保证同一个连接发来的数据只会被同一个worker处理
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $log_file = config("device_log");
+
+        $stream = new StreamHandler($log_file, Logger::DEBUG);
+        $firephp = new FirePHPHandler();
+
+        $this ->log_ins = new Logger('device_tcp_log');
+
+        $dateFormat = "Y n j, g:i a";
+// the default output format is [%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+        $output = "%datetime% > %level_name% > %message% %context% %extra%\n";
+        $formatter = new LineFormatter($output, $dateFormat);
+        $stream ->setFormatter($formatter);
+
+        // 添加handler
+        $this ->log_ins->pushHandler($stream);
+        $this ->log_ins->pushHandler($firephp);
+
+    }
 
     //0x11 设置设备编号【服务器->设备】
     protected function set_device_no($device_no){
@@ -368,7 +400,7 @@ class Tcpserver extends Server{
                 $device_fd = $response_str["fd"];
                 $door_num = $response_str["door_num"];
                 $req_cmd = $this -> open_single_door($door_num);
-
+                $this -> log_ins->info('open_single_door log success',array('username' => 'Seldaek'));
 //                $device_send_log  = $this ->log_path . "device_send_log.log";
 //                file_put_contents($device_send_log , var_export([$device_fd,$req_cmd], true));
 
@@ -547,7 +579,7 @@ class Tcpserver extends Server{
                 $server -> send($tcp_client_fd , format_json($result));
             }elseif ($result["type"] == "0x27"){
                 //获取4G卡ICCID号
-                
+
                 $tcp_client_fd = $this->get_tcpclient_fd($fd, "get_iccid");
                 $server -> send($tcp_client_fd , format_json($result));
             }

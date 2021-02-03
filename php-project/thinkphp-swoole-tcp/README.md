@@ -1,6 +1,17 @@
 #### 说明
 本项目是使用swoole创建一个tcp Server，用作自提柜智能开箱服务端
 
+- PHP操作扩展安装
+```angular2
+mongolog安装：
+
+tp-swoole扩展安装
+
+
+```
+
+
+
 - 基于swoole tcp服务端监听在9502端口
 ```bash
 #启动tcp server9502端口
@@ -25,3 +36,14 @@ php public/index.php index/Tcpserver/start
 * * * * * /usr/local/php /data/wwwroot/.../think testalived >> /tmp/test
 
 ```
+
+
+
+
+
+- http client测试地址
+
+39.100.145.198:9100/index/res/test_monolog
+
+token
+

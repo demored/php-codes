@@ -2,6 +2,12 @@
 namespace app\index\controller;
 use think\Controller;
 use think\Db;
+use Monolog\Logger;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
+
+
 
 /**
  * Class Tcpclient
@@ -15,6 +21,9 @@ class Res extends Base{
     private  $host = "39.100.145.198";
     private $port = 9502;
     private $token = "9a3ebb2820a834dcec33360a3b164947";
+
+    private $log_ins = null;
+
     private $message = [
         "code" => 0,
         "msg" => ""
@@ -31,7 +40,15 @@ class Res extends Base{
         if($token != $this -> token){
             $this -> return_json(40101, "令牌错误");
         }
+
     }
+
+    //测试monolog
+    public function test_monolog(){
+        $this -> log_ins->info('My logger is now ready',array('username' => 'Seldaek'));
+        echo "success";
+    }
+
 
     //解析从tcp服务端传递过来的返回数据
     public function parse_tcp_server_return($result){
