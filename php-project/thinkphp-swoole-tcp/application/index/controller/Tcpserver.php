@@ -50,7 +50,7 @@ class Tcpserver extends Server{
         $this ->log_ins = new Logger('device_tcp_log');
 
         $dateFormat = "Y n j, g:i a";
-// the default output format is [%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+        // the default output format is [%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
         $output = "%datetime% > %level_name% > %message% %context% %extra%\n";
         $formatter = new LineFormatter($output, $dateFormat);
         $stream ->setFormatter($formatter);
@@ -60,7 +60,7 @@ class Tcpserver extends Server{
         $this ->log_ins->pushHandler($firephp);
 
     }
-
+    
     //0x11 设置设备编号【服务器->设备】
     protected function set_device_no($device_no){
         //字节数
