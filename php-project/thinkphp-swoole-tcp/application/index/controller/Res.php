@@ -227,7 +227,7 @@ class Res extends Base{
             if(empty($device_no)){
                 $this -> return_json(30003, "设备号必须");
             }
-            
+
             $fd = Db::name("devices") -> where(["device_no" => $device_no]) -> value("fd");
             if(empty($fd)){
                 $this -> return_json(30006, "该设备号不存在");

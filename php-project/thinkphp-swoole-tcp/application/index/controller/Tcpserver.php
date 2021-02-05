@@ -588,7 +588,7 @@ class Tcpserver extends Server{
                         $req_cmd = $this -> open_single_door($door_num);
                         $tcp_cmd = str2hex($req_cmd);
                         $server->send($fd, $tcp_cmd);
-                        
+
                     }else{
                         //密码验证失败
                         $tcp_cmd = str2hex("EF 07 00 0A 08 AB CD");
@@ -607,6 +607,11 @@ class Tcpserver extends Server{
             }elseif ($result["type"] == "0x11"){
                 //设置设备号,设备响应结果
                 $tcp_client_fd = $this->get_tcpclient_fd($fd, "set_device_no");
+                $server -> send($tcp_client_fd , format_json($result));
+
+            }elseif ($result["type"] == "0x13"){
+                //设置设备时间
+                $tcp_client_fd = $this->get_tcpclient_fd($fd, "set_device_date");
                 $server -> send($tcp_client_fd , format_json($result));
 
             }elseif ($result["type"] == "0x14"){

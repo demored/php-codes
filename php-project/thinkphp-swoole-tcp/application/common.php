@@ -23,7 +23,7 @@ function send_tcp_message($host, $port, $send_data = []){
     socket_set_nonblock($socket);
     socket_write($socket, $message, strlen($message));
 
-    sleep(5);	//机器运算要比网络传输快几百倍，服务器还没有返回数据呢就已经开始运行了，当然就收的是空值了
+    sleep(2);	//机器运算要比网络传输快几百倍，服务器还没有返回数据呢就已经开始运行了，当然就收的是空值了
     $str = "";
     while ($flag = socket_recv($socket, $buf, 2, 0)) {
         $str .= $buf;
