@@ -13,7 +13,13 @@ return [
     // +----------------------------------------------------------------------
     // | 应用设置
     // +----------------------------------------------------------------------
-    "device_log" => "/data/wwwroot/zyk-swoole-tcp/runtime/device.log",
+    //心跳日志
+    "heart_log_file" => "/data/wwwroot/zyk-swoole-tcp/runtime/heart_log_file.log",
+    //业务日志
+    "sys_log_file" => "/data/wwwroot/zyk-swoole-tcp/runtime/sys_log_file.log",
+
+    "sys_url" => "",
+
     // 应用调试模式
     'app_debug'              => false,
     // 应用Trace

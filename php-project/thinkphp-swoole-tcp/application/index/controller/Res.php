@@ -193,7 +193,6 @@ class Res extends Base{
         }
     }
 
-
     //获取自提柜所有门箱状态
     public function get_all_door_status(){
         if(IS_POST){
@@ -389,7 +388,7 @@ class Res extends Base{
 
             set_time_limit(0);
             $send_data = [
-                "req_type" => "get_door_status",
+                "req_type" => "get_iccid",
                 "device_no" => $device_no,
                 "fd" => $fd
             ];

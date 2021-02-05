@@ -75,7 +75,7 @@ function str2hex_($req_cmd = ""){
     for ($j = 0; $j < count($sendStrArray); $j++) {
         $str .= chr(hexdec($sendStrArray[$j]));  // 逐组数据发送
     }
-
+    
     $req_cmd_hex = $str;
     return $req_cmd_hex;
 }

@@ -10,6 +10,14 @@ tp-swoole扩展安装
 
 ```
 
+- 部署系统
+
+```angular2
+
+chmod -R 777 runtime
+
+
+```
 
 
 - 基于swoole tcp服务端监听在9502端口
