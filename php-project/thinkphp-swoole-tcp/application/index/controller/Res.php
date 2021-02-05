@@ -45,10 +45,20 @@ class Res extends Base{
 
     //测试monolog
     public function test_monolog(){
-        $this -> log_ins->info('My logger is now ready',array('username' => 'Seldaek'));
-        echo "success";
-    }
+//        $this -> log_ins->info('My logger is now ready',array('username' => 'Seldaek'));
+//        echo "success";
 
+        $device_no = "000002";
+        $byte_nums = strlen($device_no) + 7;
+        //转成16进制格式
+        $device_no_hex = trim(chunk_split(bin2hex($device_no), 2, ' '));
+
+        //字节数转成16进制
+        $byte_nums_hex = int2hex($byte_nums);
+        $req_cmd = "EF {$byte_nums_hex} 00 11 FF {$device_no_hex} AB CD";
+        echo $req_cmd;
+
+    }
 
     //解析从tcp服务端传递过来的返回数据
     public function parse_tcp_server_return($result){
@@ -218,7 +228,7 @@ class Res extends Base{
             if(empty($device_no)){
                 $this -> return_json(30003, "设备号必须");
             }
-
+            
             $fd = Db::name("devices") -> where(["device_no" => $device_no]) -> value("fd");
             if(empty($fd)){
                 $this -> return_json(30006, "该设备号不存在");
@@ -258,7 +268,6 @@ class Res extends Base{
             ];
 
             $result = send_tcp_message($this -> host, $this ->port, $send_data);
-
             $this -> parse_tcp_server_return($result);
         }else{
             $this -> return_json(30001, "非法请求");
@@ -316,7 +325,7 @@ class Res extends Base{
                 $this -> return_json(30008, "密码不能为空");
             }
 
-            if(substr($pwd) > 8 || substr($pwd) < 4){
+            if(strlen($pwd) > 8 || strlen($pwd) < 4){
                 $this -> return_json(30009, "密码最少4位，最多8位");
             }
 

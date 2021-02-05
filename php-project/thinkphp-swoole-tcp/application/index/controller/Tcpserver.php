@@ -66,8 +66,7 @@ class Tcpserver extends Server{
         //字节数
         $byte_nums = strlen($device_no) + 7;
         //转成16进制格式
-        $device_no_hex = chunk_split(dechex($device_no), 2, ' ');
-
+        $device_no_hex = trim(strtoupper(chunk_split(bin2hex($device_no), 2, ' ')));
         //字节数转成16进制
         $byte_nums_hex = int2hex($byte_nums);
         $req_cmd = "EF {$byte_nums_hex} 00 11 FF {$device_no_hex} AB CD";
@@ -110,7 +109,7 @@ class Tcpserver extends Server{
     protected function set_device_date(){
         $time = date("Y-m-d H:i:s");
         $byte_nums = strlen($time) + 7;
-        $device_date_hex = chunk_split(dechex($time), 2, ' ');
+        $device_date_hex = trim(strtoupper(chunk_split(bin2hex($time), 2, ' ')));
         $byte_nums_hex = int2hex($byte_nums);
         $req_cmd = "EF {$byte_nums_hex} 00 13 FF {$device_date_hex} AB CD";
         return $req_cmd;
@@ -119,7 +118,10 @@ class Tcpserver extends Server{
     //0x14：发送二维码
     protected function set_device_qrcode($qrcode_data){
         $byte_nums = strlen($qrcode_data) + 7;
-        $device_qrcode_hex = chunk_split(dechex($qrcode_data), 2, ' ');
+
+        $device_qrcode_hex = trim(strtoupper(chunk_split(bin2hex($qrcode_data), 2, ' ')));
+
+//        $device_qrcode_hex = chunk_split(dechex($qrcode_data), 2, ' ');
         $byte_nums_hex = int2hex($byte_nums);
         $req_cmd = "EF {$byte_nums_hex} 00 14 FF {$device_qrcode_hex} AB CD";
         return $req_cmd;
@@ -128,7 +130,9 @@ class Tcpserver extends Server{
     //设置设备初始登录密码
     protected function set_device_pwd($pwd){
         $byte_nums = strlen($pwd) + 8;
-        $pwd_hex = chunk_split(dechex($pwd), 2, ' ');
+        $pwd_hex = trim(chunk_split(bin2hex($pwd), 2, ' '));
+
+//        $pwd_hex = chunk_split(dechex($pwd), 2, ' ');
         $byte_nums_hex = int2hex($byte_nums);
         $req_cmd = "EF {$byte_nums_hex} 00 1D FF 02 {$pwd_hex} AB CD";
         return $req_cmd;
@@ -146,13 +150,11 @@ class Tcpserver extends Server{
         $response_cmd = format_str($cmd);
         $response_cmd_type = substr($response_cmd,6,2); //命令类型
 
-        $device_send_log  = $this ->log_path . "device_send6.log";
-        file_put_contents($device_send_log , var_export([$response_cmd], true));
-
+//        $this -> log_ins->info('设备号测试',array('response_cmd_type' => $response_cmd_type));
         //解析完的格式
         $result = ["type" => "", "code" => 0 , "msg" => "", "data" => []];
 
-        switch ("0x".$response_cmd_type){
+        switch ("0x".strtoupper($response_cmd_type)){
             case "0x01": //1、开箱门【服务器->设备】
                 $result["type"] = "0x01";
                 $response_code = substr($response_cmd, 8, 2);
@@ -223,7 +225,6 @@ class Tcpserver extends Server{
                 $result["msg"] = "获取成功";
                 $result["code"] = 10006;
                 $result["data"] = ["nums" => hex2int($hex_num)];
-
                 break;
 
             case "0x0A": //设备发送密码给服务器【设备->服务器】
@@ -243,9 +244,6 @@ class Tcpserver extends Server{
                 $result["type"] = "0x07";
                 $result["msg"] = "发送密码检验后的设备响应";
                 $result["data"] = ["cmd" => $response_cmd];
-//                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
-//                $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
-//                $code_status = $response_cmd_hex_arr[5];
                 break;
 
             case "0x11": //设置设备编号【服务器->设备】
@@ -264,7 +262,7 @@ class Tcpserver extends Server{
 
             case "0x12": //获取设备编号【服务器->设备】
                 $result["type"] = "0x12";
-                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex = trim(chunk_split(format_str($response_cmd), 2, ' '));
                 $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
                 $device_hex_str = implode("", array_slice($response_cmd_hex_arr, 5, -2));
                 $device_no = hex2str(format_str($device_hex_str));
@@ -296,7 +294,7 @@ class Tcpserver extends Server{
 
             case "0x1D": //获取/设置设备初始登录密码【上位机->下位机】
                 $result["type"] = "0x1D";
-                $response_cmd_hex = chunk_split(format_str($response_cmd), 2, ' ');
+                $response_cmd_hex = trim(chunk_split(format_str($response_cmd), 2, ' '));
                 $response_cmd_hex_arr = explode(" ", $response_cmd_hex);
                 if(count($response_cmd_hex_arr) == 7){
                     //设置设备初始密码
@@ -305,6 +303,7 @@ class Tcpserver extends Server{
                 }else{
                     //获取设备初始密码
                     $device_pwd_hex = implode("", array_slice($response_cmd_hex_arr, 5, -2));
+                    
                     $device_pwd = hex2str(format_str($device_pwd_hex));
                     $result["msg"] = "获取成功";
                     $result["data"]["device_pwd"] = $device_pwd;
@@ -343,8 +342,6 @@ class Tcpserver extends Server{
     //建立连接时回调函数
     public function onConnect(\swoole_server $server, $fd){
 //        echo "Client-{$fd}: Connect.\n";
-        $connect_log = $this ->log_path . "connect.log";
-        file_put_contents($connect_log, 3);
     }
 
     //http发送tcp客户端存储日志，记录客户端连接fd，设备连接fd
@@ -377,13 +374,14 @@ class Tcpserver extends Server{
             }
 
             if($response_str["req_type"] == "set_device_no"){
-                //设置设备号
-                $device_no = $response_str["device_no"];
-                $req_cmd = $this -> set_device_no($device_no);
-                $tcp_cmd = str2hex($req_cmd);
-                $device_fd = $response_str["fd"];
-                $server->send($device_fd,$tcp_cmd);
-                $this -> tcpclient_set_cmd_log($fd, $device_fd, "set_device_no");
+                //设置设备号,注释：先不由客户端发起设置设备号功能
+//                $device_no = $response_str["device_no"];
+//                $req_cmd = $this -> set_device_no($device_no);
+//                $tcp_cmd = str2hex($req_cmd);
+//                $device_fd = $response_str["fd"];
+////                $this -> log_ins->info('设置设备号',array('req_cmd' => $req_cmd,"tcp_cmd" => $tcp_cmd, "device_fd" => $device_fd));
+//                $server->send($device_fd,$tcp_cmd);
+//                $this -> tcpclient_set_cmd_log($fd, $device_fd, "set_device_no");
 
             }elseif($response_str["req_type"] == "get_device_no"){
                 //获取设备号
@@ -400,9 +398,7 @@ class Tcpserver extends Server{
                 $device_fd = $response_str["fd"];
                 $door_num = $response_str["door_num"];
                 $req_cmd = $this -> open_single_door($door_num);
-                $this -> log_ins->info('open_single_door log success',array('username' => 'Seldaek'));
-//                $device_send_log  = $this ->log_path . "device_send_log.log";
-//                file_put_contents($device_send_log , var_export([$device_fd,$req_cmd], true));
+//                $this -> log_ins->info('open_single_door log success',array('username' => 'Seldaek'));
 
                 $tcp_cmd = str2hex($req_cmd);
                 $server->send($device_fd,$tcp_cmd);
@@ -416,7 +412,6 @@ class Tcpserver extends Server{
                 $req_cmd = $this -> get_door_status($door_num);
                 $tcp_cmd = str2hex($req_cmd);
                 $server->send($device_fd, $tcp_cmd);
-
                 $this -> tcpclient_set_cmd_log($fd, $device_fd, "get_door_status");
 
             }elseif($response_str["req_type"] == "get_all_door_status"){
@@ -441,11 +436,11 @@ class Tcpserver extends Server{
                 //设置设备日期
                 $device_fd = $response_str["fd"];
                 $req_cmd = $this -> set_device_date();
-                $tcp_cmd = str2hex($req_cmd);
+                $tcp_cmd = str2hex_($req_cmd);
+                $this -> log_ins->info('设置时间',array('req_cmd' => $req_cmd, "tcp_cmd" => $tcp_cmd));
+
                 $server->send($device_fd, $tcp_cmd);
-
                 $this -> tcpclient_set_cmd_log($fd, $device_fd, "set_device_date");
-
 
             }elseif($response_str["req_type"] == "set_device_qrcode"){
                 //发送二维码【服务器->设备】
@@ -484,26 +479,12 @@ class Tcpserver extends Server{
             }
         }elseif(strtolower(strval(bin2hex($data))) == "ef07ff15ffabcd"){
             //设备发送心跳，心跳包默认20s一次
-            $device_info = Db::name("devices") -> where(["fd"=> $fd]) -> find();
-            if(empty($device_info)){
-                $device_no = create_device_no();
-                $device_data = [
-                    "fd" => $fd,
-                    "create_time" => time(), //初次连接时间
-                    //设置设备号
-                    "device_no" =>$device_no
-                ];
-                Db::name("devices") -> insert($device_data);
-                //发送设置设备号到设备指令
-                $req_cmd = $this -> set_device_no($device_no);
-                $tcp_cmd = str2hex($req_cmd);
-                $server->send($fd,$tcp_cmd);
-            }else{
-                //更新最新的时间
-                Db::name("devices") -> where(["fd" => $fd]) -> update(["update_time" => time()]);
-            }
 
-            //每次心跳时，获取设备编号，一旦连接就主动设置设备号
+            $this -> log_ins->info('20s一次心跳检测',array('fd' => $fd));
+            //每次心跳时查询设备号
+            $device_no_req_cmd = $this -> get_device_no();
+            $device_no_tcp_cmd = str2hex($device_no_req_cmd);
+            $server->send($fd,$device_no_tcp_cmd);
 
         }else{
 
@@ -511,18 +492,38 @@ class Tcpserver extends Server{
             $response_cmd = bin2hex($data);
             $result = $this -> parse_response_cmd($response_cmd);
 
-//            $device_send_log  = $this ->log_path . "device_result.log";
-//            file_put_contents($device_send_log , var_export($result, true));
+            $this -> log_ins->info('设备响应',["response_cmd" => $response_cmd], $result);
 
             if($result["type"] == "0x12"){
-                //获取设备号，更新数据库，无需将设备号发送给http客户端
-                if(isset($result["data"]["device_no"])){
-                    Db::name("fd") -> where(["fd" => $fd]) -> update(["device_no" => $result["data"]["device_no"]]);
+                //获取设备编号,设备响应结果，无需发送给客户端
+                $device_no = $result["data"]["device_no"];
+                //查询数据库，如果没有的话那么认为是没有初始设置
+                $device_info = Db::name("devices") -> where(["device_no" => $device_no]) -> find();
+                if(empty($device_info)){
+                    $device_no = create_device_no();
+                    $device_data = [
+                        "fd" => $fd,
+                        "create_time" => time(), //初次连接时间
+                        //设置设备号
+                        "device_no" =>$device_no
+                    ];
+                    Db::name("devices") -> insert($device_data);
+                    //发送设置设备号到设备指令
+                    $req_cmd = $this -> set_device_no($device_no);
+                    $tcp_cmd = str2hex($req_cmd);
+                    $server->send($fd,$tcp_cmd);
+                }else{
+                    //更新最新的时间
+                    //防止fd变化
+                    $update["update_time"] = time();
+                    $update["is_alived"] = 1;
+                    $update["fd"] = $fd;
+                    $update["status"] = 1;
+                    Db::name("devices") -> where(["id" => $device_info["id"]]) -> update($update);
                 }
                 
             }elseif ($result["type"] == "0x01"){
                 //开箱门
-
                 $tcp_client_fd = $this->get_tcpclient_fd($fd, "open_single_door");
                 $server -> send($tcp_client_fd , format_json($result));
 
@@ -531,8 +532,6 @@ class Tcpserver extends Server{
                 //获取某箱门状态
                 $tcp_client_fd = $this->get_tcpclient_fd($fd, "get_door_status");
                 $server -> send($tcp_client_fd , format_json($result));
-
-
 
             }elseif ($result["type"] == "0x03"){
                 //获取全部箱门状态
@@ -561,11 +560,6 @@ class Tcpserver extends Server{
             }elseif ($result["type"] == "0x11"){
                 //设置设备号,设备响应结果
                 $tcp_client_fd = $this->get_tcpclient_fd($fd, "set_device_no");
-                $server -> send($tcp_client_fd , format_json($result));
-
-            }elseif ($result["type"] == "0x12"){
-                //获取设备编号,设备响应结果
-                $tcp_client_fd = $this->get_tcpclient_fd($fd, "get_device_no");
                 $server -> send($tcp_client_fd , format_json($result));
 
             }elseif ($result["type"] == "0x14"){

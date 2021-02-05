@@ -68,6 +68,17 @@ function str2hex($req_cmd = ""){
     return $req_cmd_hex;
 }
 
+//设置时间中间不去空格
+function str2hex_($req_cmd = ""){
+    $sendStrArray = str_split(str_replace(' ', '', $req_cmd), 2);
+    $str = "";
+    for ($j = 0; $j < count($sendStrArray); $j++) {
+        $str .= chr(hexdec($sendStrArray[$j]));  // 逐组数据发送
+    }
+
+    $req_cmd_hex = $str;
+    return $req_cmd_hex;
+}
 //将16进制转换成字符串
 function hex2str($hex_cmd = ""){
     $str = "";
