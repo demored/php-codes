@@ -32,14 +32,14 @@ class Res extends Base{
     public function _initialize(){
         parent::_initialize();
         //检查token
-        $token = $this -> request -> header("token");
-        if(empty($token)){
-            $this -> return_json(40100, "禁止访问");
-        }
-
-        if($token != $this -> token){
-            $this -> return_json(40101, "令牌错误");
-        }
+//        $token = $this -> request -> header("token");
+//        if(empty($token)){
+//            $this -> return_json(40100, "禁止访问");
+//        }
+//
+//        if($token != $this -> token){
+//            $this -> return_json(40101, "令牌错误");
+//        }
 
     }
 
