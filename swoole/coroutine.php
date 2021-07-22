@@ -3,7 +3,9 @@
 use Swoole\Coroutine;
 use function Swoole\Coroutine\run;
 
-echo "main start\n";
+use Swoole\Coroutine\Channel;
+
+//echo "main start\n";
 
 //1、父子协程执行顺序，协程遇到sleep会被挂起交，将cpu交给其他协程
 //run(function () {
@@ -47,17 +49,40 @@ echo "main start\n";
 //echo "hello main \n";
 
 //多个协程版
-$n = 4;
-for ($i = 0; $i < $n; $i++) {
-    go(function () use ($i) {
-        Co::sleep(1);
-        echo microtime(true) . ": hello $i \n";
+//$n = 4;
+//for ($i = 0; $i < $n; $i++) {
+//    go(function () use ($i) {
+//        Co::sleep(1);
+//        echo microtime(true) . ": hello $i \n";
+//    });
+//};
+//echo "hello main \n";
+
+
+//协程间通信
+
+run(function(){
+    $channel = new Channel(1);
+
+    //协程一
+    go(function() use ($channel){
+        echo "I am co-1 \n";
+        for($i = 1; $i<= 10 ; $i++){
+            Co::sleep(1);
+            $channel -> push($i);
+        }
     });
-};
-echo "hello main \n";
 
+    //协程二
+    go(function() use($channel) {
+        while(1){
+            $data = $channel -> pop(2);
+            echo "co-2 received:" .$data."\n";
+        }
 
+    });
 
+});
 
 
 
